@@ -1868,7 +1868,6 @@ static void set_memory_order()
 
 void geometry_mpi_eo(void)
 {
-
   geometry_mpi_init();
 
   set_inner(even);
@@ -1892,13 +1891,9 @@ void geometry_mpi_eo(void)
   fix_buffer(index_zone - 1);
 
   //  logger_setlevel(0,11);
-
   set_memory_order();
-
   geometry_mem_alloc();
-
   fix_next_neightbours();
-
   geometry_mpi_finalize();
 }
 

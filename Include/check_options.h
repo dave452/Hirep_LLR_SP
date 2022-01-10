@@ -216,4 +216,12 @@
 #error Exponential lover term cannot be use simultaneously with the dirac smearing (not yet implemented)
 #endif
 
+#ifdef WITH_UMBRELLA
+#ifndef WITH_MPI
+#   error (WITH_UMBRELLA) WITH_MPI must be defined!
+#endif
+#endif
+
+
+
 #endif /* CHECK_OPTIONS_H */

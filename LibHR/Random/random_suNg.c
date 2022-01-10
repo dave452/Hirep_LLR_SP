@@ -24,6 +24,8 @@ void gaussian_suNg_vector(suNg_vector *v)
 {
     gauss((double*)v, sizeof(suNg_vector)/sizeof(double));
 }
+
+
 #if !defined(WITH_QUATERNIONS) && !defined(GAUGE_SON)
 /* generates a random SU(N) matrix via SU(2) rotations */
 static void rotate(suNg_vector *pu1, suNg_vector *pu2, double s[4]) /* same as in cabmar */
@@ -133,3 +135,28 @@ void random_suNf(suNf *u) {
 
 #endif
 
+//LLR
+#ifndef GAUGE_SON
+#ifndef GAUGE_SPN
+void random_suNg_epsilon(suNg *u, double eps) {
+#ifdef WITH_QUATERNIONS
+  random_su2_epsilon(u->c, eps);
+#else
+  double s[4];
+  suNg_vector *pu1=(suNg_vector*)(u);
+
+  _suNg_unit(*u);
+
+  for (int i=0; i<NG; ++i) {
+    suNg_vector *pu2 = pu1 + 1;
+    for (int j=i+1; j<NG; ++j) {
+                  random_su2_epsilon(s,eps);
+      rotate(pu1, pu2, s);
+      ++pu2;
+    }
+          ++pu1;
+  }
+#endif //WITH_QUATERNIONS
+}
+#endif //SPN
+#endif //SON

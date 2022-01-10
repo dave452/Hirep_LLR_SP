@@ -70,6 +70,12 @@ GLB_VAR(int,MPI_PID,=0); /* mpi rank inside MPI_COMM_WORLD (unique across replic
 #include <mpi.h>
 GLB_VAR(MPI_Comm,GLB_COMM,=MPI_COMM_WORLD); /* this is the global communicator for a replica */
 GLB_VAR(MPI_Comm,cart_comm,=MPI_COMM_NULL); /* cartesian communicator for the replica */
+
+#ifdef WITH_UMBRELLA
+GLB_VAR(MPI_Comm,UMB_WORLD); /* Communicator for umbrella swap */
+GLB_VAR(int,UID,=-1); /* Process ID of the nodes inside the UMBRELLA group */
+#endif //WITH_UMBRELLA
+
 #endif
 
 GLB_VAR(int,RID,=0); /* Replica ID of this process */
@@ -208,6 +214,10 @@ GLB_VAR(scalar_field,*ff_pi_mom,=NULL);
 
 GLB_VAR(int,four_fermion_active,=0); // whether four fermion interactions are active
 
+
+//LLR VAR
+GLB_VAR(double,llr_S0,=0);
+GLB_VAR(double,llr_dS,=0);
 
 
 

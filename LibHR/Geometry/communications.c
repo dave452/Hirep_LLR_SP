@@ -16,6 +16,10 @@
 #include <mpi.h>
 #endif
 #include "logger.h"
+#ifdef LLRHB
+#include "update.h" 
+#endif
+
 
 #ifdef MPI_TIMING
 struct timeval gfstart, gfend, gfetime, sfstart, sfend, sfetime;
@@ -865,3 +869,54 @@ void start_sc_sendrecv(suNg_scalar_field *sf) {
 
 #endif /* WITH_MPI */
 }
+
+//LLR
+#ifdef WITH_UMBRELLA
+void umbrella_swap(double* S_llr,double* S0, double* a, double* dS)
+{
+
+
+  int mpiret; (void)mpiret;
+
+  lprintf("SWAP",10,"Starting Rep Par S0 = %f dS = %f a = %f \n",*S0,*dS,*a);
+
+  /*wait on every processor*/
+  mpiret=MPI_Barrier(MPI_COMM_WORLD);
+  double data[4*N_REP];
+  double locdata[4];
+
+  locdata[0]=*S_llr;
+  locdata[1]=*S0;
+  locdata[2]=*a;
+  locdata[3]=*dS;
+  if(PID==0) {
+    mpiret=MPI_Gather(locdata,4,MPI_DOUBLE,data,4,MPI_DOUBLE,0,UMB_WORLD);
+#ifndef NDEBUG
+    if (mpiret != MPI_SUCCESS) {
+      char mesg[MPI_MAX_ERROR_STRING];
+      int mesglen;
+      MPI_Error_string(mpiret,mesg,&mesglen);
+      lprintf("MPI",0,"ERROR: %s\n",mesg);
+      error(1,1,"umbrella_swap " __FILE__,"Cannot complete gather");
+    }
+#endif
+    if(UID==0) swap(data);
+    mpiret=MPI_Scatter(data,4,MPI_DOUBLE,locdata,4,MPI_DOUBLE,0,UMB_WORLD);
+#ifndef NDEBUG
+    if (mpiret != MPI_SUCCESS) {
+      char mesg[MPI_MAX_ERROR_STRING];
+      int mesglen;
+      MPI_Error_string(mpiret,mesg,&mesglen);
+      lprintf("MPI",0,"ERROR: %s\n",mesg);
+      error(1,1,"umbrella_swap " __FILE__,"Cannot complete scatter");
+    }
+#endif
+
+  }
+  bcast(locdata,4);
+  setreplica(locdata);
+
+  lprintf("SWAP",10,"New Rep Par S0 = %f dS = %f a = %f \n",*S0,*dS,*a);
+
+}
+#endif //WITH_UMBRELLA

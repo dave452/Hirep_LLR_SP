@@ -30,6 +30,11 @@ void random_suNg(suNg *u);
 void random_u(suNg_field *gf);
 void unit_u(suNg_field *gf);
 
+//For LLR
+void random_suNg_epsilon(suNg *u, double eps);
+void random_su2_epsilon(double s[], double epsilon);
+//
+
 void random_s(suNg_scalar_field*);
 void zero_s(suNg_scalar_field *sf);
 

@@ -48,7 +48,7 @@ char *get_input_filename() { return input_filename; }
 char *get_output_filename() { return output_filename; }
 char *get_error_filename() { return error_filename; }
 
-static int setup_replicas();
+int setup_replicas();
 static void setup_random();
 
 static int setup_level = 0;
@@ -77,7 +77,9 @@ static void read_cmdline(int argc, char **argv)
       exit(0);
     }
   }
+#ifndef WITH_UMBRELLA
   error(ai != 1, 1, "SETUP_GAUGE_FIELDS", "An input file must be defined\n");
+#endif
 }
 
 void setup_gauge_fields()
@@ -241,13 +243,15 @@ static void setup_random()
  */
 int finalize_process()
 {
-
+lprintf("TEST",0,"start of finalize_process \n");
+//#ifndef LLRHB
   free_ghmc();
-
+//#endif
+lprintf("TEST",0,"free_ghmc \n");
   free_BCs();
-
+lprintf("TEST",0,"free_BCs \n");
   free_wrk_space();
-
+lprintf("TEST",0,"free_wrk_space \n");
   /* free memory */
   free_gfield(u_gauge);
 #ifdef ALLOCATE_REPR_GAUGE_FIELD
@@ -282,7 +286,7 @@ int finalize_process()
  *
  * AFFECTS THE GLOBAL VARIABLES: GLB_COMM, RID, PID, WORLD_SIZE
  */
-static int setup_replicas()
+int setup_replicas()
 {
 #ifdef WITH_MPI
 
@@ -321,6 +325,38 @@ static int setup_replicas()
     sprintf(sbuf, "Rep_%d", RID);
     mpiret = chdir(sbuf);
   }
+
+#ifdef WITH_UMBRELLA
+
+  MPI_Group group_world;
+  MPI_Group umbrella_world;
+
+  int tmp[N_REP],umb_nodes[N_REP];
+  int GID;
+  int i;
+
+  for(i=0;i<N_REP;i++) {
+    tmp[i]=0;
+    umb_nodes[i]=0;
+  }
+
+  MPI_Comm_rank(MPI_COMM_WORLD,&GID);
+
+  if(PID==0) tmp[RID]=GID;
+
+  MPI_Allreduce(tmp,umb_nodes,N_REP,MPI_INT,MPI_SUM,MPI_COMM_WORLD);
+
+  MPI_Comm_group(MPI_COMM_WORLD, &group_world);
+
+  MPI_Barrier(MPI_COMM_WORLD);
+
+  MPI_Group_incl(group_world,N_REP,umb_nodes,&umbrella_world);
+  MPI_Comm_create(MPI_COMM_WORLD,umbrella_world,&UMB_WORLD);
+
+  if(PID==0) MPI_Comm_rank(UMB_WORLD,&UID);
+
+#endif //ifdef WITH_UMBRELLA
+
 
 #endif //ifdef WITH_MPI
 

@@ -28,3 +28,5 @@ LibHR/Utils/suN_exp.c
 **/clangd
 .ycm_extra_conf.py*
 compile_commands.json
+NR_HB/output
+LLR_HB/output

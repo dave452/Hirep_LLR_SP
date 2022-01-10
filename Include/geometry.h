@@ -85,5 +85,8 @@ void test_geometry_mpi(void);
 void test_geometry_mpi_eo(void);
 void print_wdmatrix(char *filename);
 
+//LLR 
+int setup_replicas();
 
 #endif
+

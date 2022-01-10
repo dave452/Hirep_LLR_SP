@@ -39,5 +39,10 @@ void start_gf_sendrecv_flt(suNg_field_flt *gf);
 void complete_sf_sendrecv_flt(spinor_field_flt *gf);
 void start_sf_sendrecv_flt(spinor_field_flt *gf);
 
+#ifdef WITH_UMBRELLA
+void umbrella_swap(double* S_llr,double* S0, double* a, double* dS);
+void umbrella_swap_hb(double* S_llr,double* S0, double* a, double* dS);
+#endif
+//int setup_replicas();
 
 #endif /* COMMUNICATIONS_H */

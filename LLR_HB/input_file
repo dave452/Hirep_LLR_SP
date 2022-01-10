@@ -1,0 +1,75 @@
+// Global variables
+GLB_T = 4
+GLB_X = 16
+GLB_Y = 16
+GLB_Z = 16
+NP_T = 1
+NP_X = 1
+NP_Y = 1
+NP_Z = 1
+BC_SHIFT_X=0
+BC_SHIFT_Y=0
+BC_SHIFT_Z=0
+// Replicas
+N_REP = 16
+
+// Random generator
+rlx_level = 1
+rlx_seed = 13813
+rlx_start = new
+rlx_state = rand_state
+
+// Logger levels
+log:default = 30
+log:inverter = -1
+log:forcestat = 0
+
+// Fermion twisting
+theta_T = 0.
+theta_X = 0.
+theta_Y = 0.
+theta_Z = 0.
+
+// HMC variables
+//tlen = 1.0
+
+beta  =   2.40
+nhb   =   1
+nor   =   4
+nit   =   1 
+// Schroedinger functional
+SF_zf = 1.
+SF_ds = 1.
+SF_ct = 1.
+SF_sign = 1
+
+// Runtime variables
+//example: run1_8x8x8x8nc2rFUNnf0b0.000000m0.000000
+therm =2
+run name = run1
+config dir = Cnfg
+//gauge start = run1_6x6x6x6nc2rFUNnf0b0.000000m-0.000000n10
+gauge start = unit
+rm steps = 20
+rm restart = 100
+Obs n meas = 100
+meas freq = 100
+last conf = +100
+
+
+// LLR/RM
+llr:make = true
+llr:nmc = 150
+llr:nth = 15
+llr:it = 10
+llr:starta = 5.910
+llr:dS = 43.
+llr:S0 = 20463.7
+ 
+//Wilson flow parameters
+//WF:make = false
+//WF:tmax = 2.0
+//WF:nmeas = 1
+//WF:nint=100
+
+

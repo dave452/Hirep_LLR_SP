@@ -12,6 +12,7 @@ char* get_output_filename();
 char* get_error_filename();
 
 int setup_process(int *argc, char ***argv);
+
 int finalize_process(void);
 void setup_gauge_fields();
 
