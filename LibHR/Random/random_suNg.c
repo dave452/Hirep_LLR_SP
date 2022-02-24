@@ -135,7 +135,7 @@ void random_suNf(suNf *u) {
 
 #endif
 
-//LLR
+#ifdef LLRHB
 #ifndef GAUGE_SON
 #ifndef GAUGE_SPN
 void random_suNg_epsilon(suNg *u, double eps) {
@@ -150,13 +150,53 @@ void random_suNg_epsilon(suNg *u, double eps) {
   for (int i=0; i<NG; ++i) {
     suNg_vector *pu2 = pu1 + 1;
     for (int j=i+1; j<NG; ++j) {
-                  random_su2_epsilon(s,eps);
-      rotate(pu1, pu2, s);
-      ++pu2;
+        random_su2_epsilon(s,eps);
+      	rotate(pu1, pu2, s);
+        ++pu2;
     }
-          ++pu1;
+    ++pu1;
   }
 #endif //WITH_QUATERNIONS
 }
+#else //SPN
+void random_suNg_epsilon(suNg *r, double eps) {
+    suNgfull ut, *u;
+    _suNg_expand(ut,*r);
+    u=&ut;
+#ifdef WITH_QUATERNIONS
+  random_su2_epsilon(u->c, eps);
+#else
+  double s[4];
+  suNg_vector *pu1=(suNg_vector*)(u);
+
+  _suNgfull_unit(*u);
+
+  for (int i=0; i<NG; ++i) {
+    suNg_vector *pu2 = pu1 + 1;
+    for (int j=i+1; j<NG; ++j) {
+    	if( (i < NG/2 && j < NG/2) ){
+        	random_su2_epsilon(s,eps);
+                rotate(pu1, pu2, s);
+                s[3] *=-1.;
+                s[1] *=-1.;
+                rotate(pu1+NG/2, pu2+NG/2,s);
+        } else if( ( i >= NG/2 && j > NG/2) ){
+                random_su2_epsilon(s,eps);
+                rotate(pu1,pu2,s);
+                s[3] *=-1.;		
+                s[1] *=-1.;
+                rotate(pu1-NG/2,pu2-NG/2,s);
+        } else if( ( j == i + NG/2) ){
+                random_su2_epsilon(s,eps);
+                rotate(pu1,pu2,s) ;
+        } else ;
+      ++pu2;
+    }
+    ++pu1;
+  }
+#endif //WITH_QUATERNIONS
+  for (int i=0; i<NG*NG/2; ++i) { r->c[i]=ut.c[i]; }
+}
 #endif //SPN
 #endif //SON
+#endif

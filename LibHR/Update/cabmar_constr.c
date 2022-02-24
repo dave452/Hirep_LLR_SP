@@ -62,11 +62,7 @@ static inline void wmatrix(suNg_vector *pu1, suNg_vector *pu2, suNg_vector *pv1,
 
 #endif
 
-#ifndef GAUGE_SUN
-#ifdef LLRHB
-#error LLR HB only available for SUN
-#endif
-#else
+#ifndef GAUGE_SPN
 
 void cabmar_constrained(double beta,suNg *u,suNg *v,int type, double * E, double Emin, double Emax)
 {
@@ -196,4 +192,84 @@ void cabmar_constrained(double beta,suNg *u,suNg *v,int type, double * E, double
   }
 #endif
 }
+#else //GAUGE_SPN
+static inline void wtos( double s[4], double w[4], double b, double rho, int type , double * E, double Emin, double Emax, double Eold){
+  double xmin, xmax;
+  double bsq=b*b;
+  double wsq=w[0]*w[0]+w[1]*w[1]+w[2]*w[2]+w[3]*w[3];
+  double r[4];
+      if ((bsq*wsq)>1.0e-28) {
+        if (type==1) {
+          double fact=(w[0]+w[0])/wsq;
+          s[0]=fact*w[0]-1.0;
+          s[1]=fact*w[1];
+          s[2]=fact*w[2];
+          s[3]=fact*w[3];
+        } else {
+          double fact=sqrt(wsq);
+          rho*=b*fact;
+          xmax = NG*(-*E+Emax+Eold)/(fact); ///NEED to check NG factor
+          xmin = NG*(-*E+Emin+Eold)/(fact);
+          xmin=(xmin>-1.)?xmin:-1.;
+          xmax=(xmax<1.)?xmax:1.;
+          random_su2_constrained(rho,r, xmin,xmax);
+          fact=1.0/fact;
+          // s = fact * w * r
+          s[0]=fact*(r[0]*w[0]-r[1]*w[1]-r[2]*w[2]-r[3]*w[3]);
+          s[1]=fact*(r[1]*w[0]+r[0]*w[1]-r[2]*w[3]+r[3]*w[2]);
+          s[2]=fact*(r[2]*w[0]+r[0]*w[2]-r[3]*w[1]+r[1]*w[3]);
+          s[3]=fact*(r[3]*w[0]+r[0]*w[3]-r[1]*w[2]+r[2]*w[1]);
+        }
+      } else;
+
+}
+
+
+void cabmar_constrained(double beta,suNg *u,suNg *v,int type, double * E, double Emin, double Emax)
+{
+  double Eold, Enew;
+  int i,j;
+  double b,w[4],s[4];
+
+  const double invng = 1. / (double) NG;
+
+  suNg_vector *pu1=(suNg_vector*)(u);
+  suNg_vector *pv1=(suNg_vector*)(v);
+
+  b=invng*beta;
+
+  for (i=0; i<NG/2-1; ++i) {
+    suNg_vector *pu2 = pu1 + 1;
+    suNg_vector *pv2 = pv1 + 1;
+    for (j=i+1; j<NG/2; ++j) {
+      wmatrix(pu1, pu2, pv1, pv2, w);
+      Eold = invng*w[0];
+      wtos( s, w, b, 2.0, type, E, Emin, Emax, Eold);
+      rotate(pu1, pu2, s);
+      wmatrix(pu1, pu2, pv1, pv2, w);
+      Enew = invng*w[0];
+      *E += (Enew - Eold);
+      ++pu2; ++pv2;
+    }
+
+	 suNg_vector u2,v2;
+	 for (int k=0; k<NG/2; ++k){
+	   _complex_star_minus( u2.c[k], (*pu1).c[k+NG/2]);
+	   _complex_star( u2.c[k+NG/2], (*pu1).c[k]);
+	   _complex_star_minus( v2.c[k], (*pv1).c[k+NG/2]);
+	   _complex_star( v2.c[k+NG/2], (*pv1).c[k]);
+	 }
+	 pu2 = &u2; pv2 = &v2;
+   wmatrix(pu1, pu2, pv1, pv2, w);
+   Eold = invng*w[0];
+   wtos( s, w, b, 1.0, type, E, Emin, Emax, Eold);
+   rotate(pu1, pu2, s);
+   wmatrix(pu1, pu2, pv1, pv2, w);
+   Enew = invng*w[0];
+   *E += (Enew - Eold);
+    ++pu1; ++pv1;
+  }
+}
+
 #endif
+
