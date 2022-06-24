@@ -130,12 +130,6 @@ int init_mc(pg_flow *gf, char *ifile) {
 
   int start_t;
 
-  /* alloc global gauge fields */
-  u_gauge=alloc_gfield(&glattice);
-#ifdef ALLOCATE_REPR_GAUGE_FIELD
-  u_gauge_f=alloc_gfield_f(&glattice);
-#endif
-
   /* flow defaults */
   strcpy(gf->g_start,"invalid");
   strcpy(gf->run_name,"run_name");

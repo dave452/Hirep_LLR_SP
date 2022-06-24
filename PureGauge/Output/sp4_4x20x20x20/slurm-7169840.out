@@ -1,0 +1,4 @@
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** STEP 7169840.0 ON scs0096 CANCELLED AT 2022-05-30T12:00:58 ***
+slurmstepd: error: *** JOB 7169840 ON scs0096 CANCELLED AT 2022-05-30T12:00:58 ***
+slurmstepd: error: task_p_post_term: rmdir(/dev/cpuset/slurm7169840/slurm7169840.4294967294_0) failed Device or resource busy

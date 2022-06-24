@@ -1,6 +1,6 @@
 /****************************************************************************
-* Copyright (c) 2008, Claudio Pica                                          *   
-* All rights reserved.                                                      * 
+* Copyright (c) 2008, Claudio Pica                                          *
+* All rights reserved.                                                      *
 \***************************************************************************/
 
 /*******************************************************************************
@@ -30,16 +30,17 @@
 #include "spectrum.h"
 #include "nr_hb_utils.h"
 #include "cinfo.c"
-//#include "wilsonflow.h"
 #include "setup.h"
+//#include "wilsonflow.h"
+
 
 /* LLR parameters */
 typedef struct _input_llr {
   char make[256];
-  int nmc,nth,it;
-  double starta,S0,dS;
+  int nmc,nth,it, nfxa, sfreq_fxa, nhb, nor, it_freq;
+  double starta,S0,dS, Smin, Smax;
   /* for the reading function */
-  input_record_t read[8];
+  input_record_t read[15];
 } input_llr;
 
 
@@ -53,10 +54,17 @@ typedef struct _input_llr {
     {"Robbins Monro startint iteration", "llr:it = %d", INT_T, &((varname).it)}, \
     {"Cental action", "llr:S0 = %lf", DOUBLE_T, &((varname).S0)}, \
     {"Delta S", "llr:dS = %lf", DOUBLE_T, &((varname).dS)}, \
+    {"Maximum S value for all replicas", "llr:Smax = %lf", DOUBLE_T, &((varname).Smax)}, \
+    {"Minimum S value for all replicas", "llr:Smin = %lf", DOUBLE_T, &((varname).Smin)}, \
+    {"Number of fixed a steps ", "llr:nfxa = %d", INT_T, &((varname).nfxa)}, \
+    {"Swap frequency for fixed a interations ", "llr:sfreq_fxa = %d", INT_T, &((varname).sfreq_fxa)}, \
+    {"Number of heatbath steps per MC step ", "nhb = %d", INT_T, &((varname).nhb)}, \
+    {"Number of over-relaxation steps per MC step ", "nor = %d", INT_T, &((varname).nor)}, \
+    {"Suppresion factor increment frequency ", "llr:it_freq = %d", INT_T, &((varname).it_freq)},  \
     {NULL, NULL, 0, NULL}				\
     }\
 }
- 
+
 input_llr llr_var=init_input_llr(llr_var);
 
 pg_flow flow=init_pg_flow(flow);
@@ -94,124 +102,110 @@ int main(int argc,char *argv[]) {
   char sbuf[128];
   int i;
   read_cmdline(argc,argv);
-  
+
   /* setup process communications */
   setup_process(&argc,&argv);
-  
-  /* read global variables file */
-  read_input(glb_var.read,input_filename);
-  
-  setup_replicas();
-  
-  /* logger setup */
-  read_input(logger_var.read,input_filename);
-  logger_set_input(&logger_var);
-  if (PID!=0) { logger_disable(); }   /* disable logger for MPI processes != 0 */
-  else {
-    FILE* stderrp;
-    sprintf(sbuf,">>%s",output_filename);  logger_stdout(sbuf);
-    stderrp=freopen(error_filename,"w",stderr);
-    error(stderrp==NULL,1,"main [hmc.c]",
-	  "Cannot redirect the stderr");
-  }
-  
-  lprintf("MAIN",0,"Compiled with macros: %s\n",MACROS);
-  lprintf("MAIN",0,"[RepID: %d][world_size: %d]\n[MPI_ID: %d][MPI_size: %d]\n",RID,WORLD_SIZE,MPI_PID,MPI_WORLD_SIZE);
-  //lprintf("MAIN",0,"SVN Revision: %d\n", CI_svnrevision);
 
-  lprintf("MAIN",0,"Logger lelvel: %d\n",logger_getlevel(0));
-  
-  /* setup lattice geometry */
-  //if (geometry_init() == 1) { finalize_process(); lprintf("TEST",0,"Geometry_init: \n"); return 0; }
-  //geometry_mpi_eo();
-  /* test_geometry_mpi_eo(); */ 
-  //lprintf("TEST",0,": geometry_mpi_eo \n");
-  /* setup random numbers */
-  read_input(rlx_var.read,input_filename);
-  lprintf("MAIN",0,"RLXD [%d,%d]\n",rlx_var.rlxd_level,rlx_var.rlxd_seed+MPI_PID);
-  rlxd_init(rlx_var.rlxd_level,rlx_var.rlxd_seed+MPI_PID); /* use unique MPI_PID to shift seeds */
-
-  if(strcmp(rlx_var.rlxd_start,"continue")==0 && rlx_var.rlxd_state[0]!='\0')
-  {
-    /*load saved state*/
-    lprintf("MAIN",0,"Loading rlxd state from file [%s]\n",rlx_var.rlxd_state);
-    read_ranlxd_state(rlx_var.rlxd_state);
-  }
-
-#ifdef GAUGE_SUN
-  lprintf("MAIN",0,"Gauge group: SU(%d)\n",NG);
-#elif GAUGE_SON
-  lprintf("MAIN",0,"Gauge group: SO(%d)\n",NG);
-#else
-  lprintf("MAIN",0,"Default gauge group: SU(%d)\n",NG);
-#endif
-  lprintf("MAIN",0,"Fermion representation: " REPR_NAME " [dim=%d]\n",NF);
+  setup_gauge_fields();
 
   /* read input for llr update */
   read_input(llr_var.read,input_filename);
 
-  lprintf("MAIN",0,"LLR nunber of mc steps per RM: %d\n",llr_var.nmc);
-  lprintf("MAIN",0,"LLR nunber of therm steps per RM %d\n",llr_var.nth);
-  lprintf("MAIN",0,"LLR Initial a %f\n",llr_var.starta);
-  lprintf("MAIN",0,"LLR RM start value iteration %d\n",llr_var.it);
-  lprintf("MAIN",0,"LLR S0 Central action %f\n",llr_var.S0);
-  lprintf("MAIN",0,"LLR Delta S %f\n",llr_var.dS);
- 
-  /* Init Monte Carlo */
+  lprintf("MAIN",0,"NR nunber of mc steps per RM: %d\n",llr_var.nmc);
+  lprintf("MAIN",0,"NR nunber of therm steps per RM %d\n",llr_var.nth);
+  lprintf("MAIN",0,"NR Initial a %f\n",llr_var.starta);
+  lprintf("MAIN",0,"NR RM start value iteration %d and its iteration frequency %d \n",llr_var.it, llr_var.it_freq);
+  lprintf("MAIN",0,"NR S0 Central action %f\n",llr_var.S0);
+  lprintf("MAIN",0,"NR Delta S %f\n",llr_var.dS);
+  lprintf("MAIN",0,"Number of heatbath steps %d, number of overrelaxation steps %d\n",llr_var.nhb,llr_var.nor);
+  lprintf("MAIN",0,"Number of fixed a steps %d\n",llr_var.nfxa);
+  lprintf("MAIN",0,"Swap frequency for fixed a steps %d\n",llr_var.sfreq_fxa);
+  lprintf("MAIN",0,"NR Smin minimum action for all replicas %f\n",llr_var.Smin);
+  lprintf("MAIN",0,"NR Smax maximum action for all replicas %f\n",llr_var.Smax);
+  lprintf("MAIN",0,"NR Delta S %f\n",llr_var.dS);
+
+#ifdef LLRHBPARALLEL
+  lprintf("MAIN",0,"Compiled with domain decomposition \n");
+#else
+  lprintf("MAIN",0,"Compiled without domain decomposition \n");
+#endif
+/* Init Monte Carlo */
 
   init_mc(&flow, input_filename);
+  if(flow.start < llr_var.it)
+  {
+      flow.end = llr_var.it + (flow.end - flow.start);
+      flow.start = llr_var.it;
+  }
+  else
+  {
+      llr_var.it = flow.start;
+
+  }
   lprintf("MAIN",0,"Initial plaquette: %1.8e\n",avr_plaquette());
 
-  init_robbinsmonro(llr_var.nmc,llr_var.nth,llr_var.starta,llr_var.it,llr_var.dS,llr_var.S0);
-  
+  init_robbinsmonro(llr_var.nmc,llr_var.nth,llr_var.starta,llr_var.it,llr_var.dS,llr_var.S0,llr_var.sfreq_fxa, llr_var.Smin, llr_var.Smax,llr_var.nhb,llr_var.nor, llr_var.it_freq);
+
 
   for(int j=0;j<flow.rmrestart;++j) {
-    
-    restart_robbinsmonro();  
-    
+
+    restart_robbinsmonro();
+    struct timeval start, end, etime; /* //for trajectory timing */
+    gettimeofday(&start,0);
     for (i=0;i<flow.therm;++i){
-      struct timeval start, end, etime; /* //for trajectory timing */
-      lprintf("MAIN",0,"Starting thermalization, thermalization steps = %d\n",flow.therm);
-      lprintf("MAIN",0,"Thermalization #%d...\n",i);
-      gettimeofday(&start,0);
-      
       thermrobbinsmonro();
-      
-      gettimeofday(&end,0);
-      timeval_subtract(&etime,&end,&start);
-      lprintf("MAIN",0,"Thermalization sequence #%d: generated in [%ld sec %ld usec]\n",i,etime.tv_sec,etime.tv_usec);    
+      if (flow.therm > 20)
+        {
+            if (i % (flow.therm / 5) == 0)
+                lprintf("MAIN", 0, "%d", ((i * 100) / flow.therm));
+            else if (i % (flow.therm / 20) == 0)
+                lprintf("MAIN", 0, ".");
+        }
     }
+    gettimeofday(&end,0);
+    timeval_subtract(&etime,&end,&start);
+    lprintf("MAIN",0,"Thermalization done in [%ld sec %ld usec].\n", etime.tv_sec, etime.tv_usec);
+
+    lprintf("MAIN", 0, "flow.start: %d, flow.end: %d, llr_var.it: %d", flow.start,flow.end, llr_var.it);
     for(i=flow.start;i<flow.end;++i) {
-      
+
       struct timeval start, end, etime; /* //for trajectory timing */
       lprintf("MAIN",0,"Trajectory #%d...\n",i);
       gettimeofday(&start,0);
-      newtonraphson();  
+      newtonraphson();
+     //Timing and output data
       gettimeofday(&end,0);
       timeval_subtract(&etime,&end,&start);
-      lprintf("MAIN",0,"Robbins Monro sequence #%d: generated in [%ld sec %ld usec]\n",i,etime.tv_sec,etime.tv_usec);
-      lprintf("MAIN",0,"Plaq a fixed %lf \n",avr_plaquette());    
-      lprintf("MAIN",0,"<a_rho(%d,%d,%lf)>= %f\n",j,i,getS0(),get_llr_a());  
+      lprintf("MAIN",0,"Newton_raphson sequence #%d: generated in [%ld sec %ld usec]\n",i,etime.tv_sec,etime.tv_usec);
+      lprintf("MAIN",0,"Plaq a fixed %lf \n",avr_plaquette());
+      lprintf("MAIN",0,"<a_rho(%d,%d,%.9f)>= %.9f\n",j,i,getS0(),get_llr_a());
     }
     lprintf("MAIN",0,"Robins Monro update done.\n");
+    for(i=0;i<llr_var.nfxa;++i) {
+      struct timeval start, end, etime; /* //for trajectory timing */
+
+      llr_fixed_a_update();
+
+      //lprintf("MAIN",0,"Obs measure for fixed E=%f dE=%f a=%f T\n",getS0(),getdS(),get_llr_a());
+       }
   }
   /* save final configuration */
   save_conf(&flow, (flow.end-flow.start)*flow.rmrestart);
   ///* Only save state if we have a file to save to */
   if(rlx_var.rlxd_state[0]!='\0') {
     lprintf("MAIN",0,"Saving rlxd state to file %s\n",rlx_var.rlxd_state);
-    write_ranlxd_state(rlx_var.rlxd_state);
+     write_ranlxd_state(rlx_var.rlxd_state);
   }
   gettimeofday(&endmain,0);
   timeval_subtract(&etimemain,&endmain,&startmain);
-  
+
   lprintf("MAIN",0,"Total simulation time =[%ld sec %ld usec]\n",etimemain.tv_sec,etimemain.tv_usec);
   /* finalize Monte Carlo */
   end_mc();
-  
+
   /* close communications */
   finalize_process();
-  
+
   return 0;
-  
+
 }

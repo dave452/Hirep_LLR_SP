@@ -30,3 +30,5 @@ LibHR/Utils/suN_exp.c
 compile_commands.json
 NR_HB/output
 LLR_HB/output
+Pure_Gauge/output
+*/output

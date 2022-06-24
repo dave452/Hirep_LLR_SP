@@ -1,0 +1,18 @@
+[ERROR][0]SETUP_GAUGE_FIELDS:
+[ERROR][0]An input file must be defined
+
+[ERROR][0]Exiting program...
+[TEST][0]start of finalize_process 
+[ERROR][0]SETUP_GAUGE_FIELDS:
+[ERROR][0]An input file must be defined
+
+[ERROR][0]Exiting program...
+[TEST][0]start of finalize_process 
+[TEST][0]free_ghmc 
+[TEST][0]free_ghmc 
+[TEST][0]free_BCs 
+[TEST][0]free_BCs 
+[TEST][0]free_wrk_space 
+[TEST][0]free_wrk_space 
+[SYSTEM][0]Process finalized.
+[SYSTEM][0]Process finalized.

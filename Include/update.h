@@ -211,7 +211,7 @@ void set_scalar_field(scalar_field *s, double c);
 void gaussian_scalar_field(scalar_field *s);
 
 
-/*Functions added for constrained heathbath 
+/*Functions added for constrained heathbath
  * and the related implementation of the LLR*/
 
 void random_su2_creutz(double rho,double s[]);
@@ -220,12 +220,12 @@ void random_su2_constrained(double rho,double s[], double xmin, double xmax);
 void cabmar_constrained(double beta,suNg *u, suNg *v,int type, double * E, double Emin, double Emax);
 void update_constrained(double beta,int nhb,int nor, double *S, double Smin, double Smax);
 void anneal(double *E, double S0, double dS);
+void update_constrained_parallel(double beta,int nhb,int nor, double *S, double Smin, double Smax);
 
 void thermrobbinsmonro_hb(void);
 void measrobbinsmonro_hb(void);
 void robbinsmonro_hb(void);
 void restart_robbinsmonro_hb();
-void init_robbinsmonro_hb(int nrm,int nth,double starta,int it,double dS,double S0);
 /*================*/
 
 /* ROBBINS MONRO*/
@@ -236,14 +236,14 @@ void measrobbinsmonro(void);
 void newtonraphson(void);
 void robbinsmonro(void);
 void restart_robbinsmonro();
-void init_robbinsmonro(int nrm,int nth,double starta,int it,double dS,double S0);
+void init_robbinsmonro(int nrm,int nth,double starta,int it,double dS,double S0, int sfreq_fxa, double Smin, double Smax, int nhb, int nor, int it_freq);
 double getdS(void);
 double get_llr_a(void);
 double get_llr_a_hb(void);
 double getS0(void);
 double getS0_hb(void);
 void llr_fixed_a_update(void);
-
+int anneal_parallel(double beta, double dbeta, double *S, double S0, double dS);
 #ifdef WITH_UMBRELLA
 void swap(double *data);
 void setreplica(double *data);

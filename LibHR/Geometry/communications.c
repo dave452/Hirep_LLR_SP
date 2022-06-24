@@ -3,61 +3,59 @@
  * All rights reserved.                                                      *
  \***************************************************************************/
 
+#include "global.h"
 #include "communications.h"
+#include "logger.h"
 #include "error.h"
 #include "geometry.h"
-#include "global.h"
-#include "logger.h"
 #include "spinor_field.h"
 #include "suN_types.h"
+#include "global.h"
+#include "update.h"
 #include "utils.h"
 #include <string.h>
+#include <stdio.h>
 #ifdef WITH_MPI
 #include <mpi.h>
 #endif
 #include "logger.h"
-#ifdef LLRHB
-#include "update.h" 
-#endif
-
 
 #ifdef MPI_TIMING
-struct timeval gfstart, gfend, gfetime, sfstart, sfend, sfetime;
-int gf_control = 0, sf_control = 0;
+struct timeval gfstart, gfend, gfetime,sfstart, sfend, sfetime;
+int gf_control=0,sf_control=0;
 #endif
 
 void global_sum(double *d, int n) {
 #ifdef WITH_MPI
-  int mpiret;
-  (void)mpiret; // Remove warning of variable set but not used
+  int mpiret;(void)mpiret; // Remove warning of variable set but not used
   double pres[n];
 
 #ifdef MPI_TIMING
   struct timeval start, end, etime;
-  gettimeofday(&start, 0);
+  gettimeofday(&start,0);
 #endif
 
-  mpiret = MPI_Allreduce(d, pres, n, MPI_DOUBLE, MPI_SUM, GLB_COMM);
+  mpiret=MPI_Allreduce(d,pres,n,MPI_DOUBLE,MPI_SUM,GLB_COMM);
+
 
 #ifdef MPI_TIMING
-  gettimeofday(&end, 0);
-  timeval_subtract(&etime, &end, &start);
-  lprintf("MPI TIMING", 0, "global_sum " __FILE__ " %ld sec %ld usec\n",
-          etime.tv_sec, etime.tv_usec);
+  gettimeofday(&end,0);
+  timeval_subtract(&etime,&end,&start);
+  lprintf("MPI TIMING",0,"global_sum " __FILE__ " %ld sec %ld usec\n",etime.tv_sec,etime.tv_usec);
 #endif
 
 #ifndef NDEBUG
   if (mpiret != MPI_SUCCESS) {
     char mesg[MPI_MAX_ERROR_STRING];
     int mesglen;
-    MPI_Error_string(mpiret, mesg, &mesglen);
-    lprintf("MPI", 0, "ERROR: %s\n", mesg);
-    error(1, 1, "global_sum " __FILE__, "Cannot perform global_sum");
+    MPI_Error_string(mpiret,mesg,&mesglen);
+    lprintf("MPI",0,"ERROR: %s\n",mesg);
+    error(1,1,"global_sum " __FILE__,"Cannot perform global_sum");
   }
 #endif
-  while (n > 0) {
+  while(n>0) {
     --n;
-    d[n] = pres[n];
+    d[n]=pres[n];
   }
 #else
   /* for non mpi do nothing */
@@ -65,38 +63,39 @@ void global_sum(double *d, int n) {
 #endif
 }
 
+
+
 void global_sum_int(int *d, int n) {
 #ifdef WITH_MPI
-  int mpiret;
-  (void)mpiret; // Remove warning of variable set but not used
+  int mpiret; (void)mpiret; // Remove warning of variable set but not used
   int pres[n];
 
 #ifdef MPI_TIMING
   struct timeval start, end, etime;
-  gettimeofday(&start, 0);
+  gettimeofday(&start,0);
 #endif
 
-  mpiret = MPI_Allreduce(d, pres, n, MPI_INT, MPI_SUM, GLB_COMM);
+  mpiret=MPI_Allreduce(d,pres,n,MPI_INT,MPI_SUM,GLB_COMM);
+
 
 #ifdef MPI_TIMING
-  gettimeofday(&end, 0);
-  timeval_subtract(&etime, &end, &start);
-  lprintf("MPI TIMING", 0, "global_sum_int " __FILE__ " %ld sec %ld usec\n",
-          etime.tv_sec, etime.tv_usec);
+  gettimeofday(&end,0);
+  timeval_subtract(&etime,&end,&start);
+  lprintf("MPI TIMING",0,"global_sum_int " __FILE__ " %ld sec %ld usec\n",etime.tv_sec,etime.tv_usec);
 #endif
 
 #ifndef NDEBUG
   if (mpiret != MPI_SUCCESS) {
     char mesg[MPI_MAX_ERROR_STRING];
     int mesglen;
-    MPI_Error_string(mpiret, mesg, &mesglen);
-    lprintf("MPI", 0, "ERROR: %s\n", mesg);
-    error(1, 1, "global_sum_int " __FILE__, "Cannot perform global_sum");
+    MPI_Error_string(mpiret,mesg,&mesglen);
+    lprintf("MPI",0,"ERROR: %s\n",mesg);
+    error(1,1,"global_sum_int " __FILE__,"Cannot perform global_sum");
   }
 #endif
-  while (n > 0) {
+  while(n>0) {
     --n;
-    d[n] = pres[n];
+    d[n]=pres[n];
   }
 #else
   /* for non mpi do nothing */
@@ -104,71 +103,71 @@ void global_sum_int(int *d, int n) {
 #endif
 }
 
+
+
 void global_max(double *d, int n) {
 #ifdef WITH_MPI
-  int mpiret;
-  (void)mpiret; // Remove warning of variable set but not used
+  int mpiret;(void)mpiret; // Remove warning of variable set but not used
   double pres[n];
 
 #ifdef MPI_TIMING
   struct timeval start, end, etime;
-  gettimeofday(&start, 0);
+  gettimeofday(&start,0);
 #endif
 
-  mpiret = MPI_Allreduce(d, pres, n, MPI_DOUBLE, MPI_MAX, GLB_COMM);
+  mpiret=MPI_Allreduce(d,pres,n,MPI_DOUBLE,MPI_MAX,GLB_COMM);
+
 
 #ifdef MPI_TIMING
-  gettimeofday(&end, 0);
-  timeval_subtract(&etime, &end, &start);
-  lprintf("MPI TIMING", 0, "global_max " __FILE__ " %ld sec %ld usec\n",
-          etime.tv_sec, etime.tv_usec);
+  gettimeofday(&end,0);
+  timeval_subtract(&etime,&end,&start);
+  lprintf("MPI TIMING",0,"global_max " __FILE__ " %ld sec %ld usec\n",etime.tv_sec,etime.tv_usec);
 #endif
 
 #ifndef NDEBUG
   if (mpiret != MPI_SUCCESS) {
     char mesg[MPI_MAX_ERROR_STRING];
     int mesglen;
-    MPI_Error_string(mpiret, mesg, &mesglen);
-    lprintf("MPI", 0, "ERROR: %s\n", mesg);
-    error(1, 1, "global_max " __FILE__, "Cannot perform global_sum");
+    MPI_Error_string(mpiret,mesg,&mesglen);
+    lprintf("MPI",0,"ERROR: %s\n",mesg);
+    error(1,1,"global_max " __FILE__,"Cannot perform global_sum");
   }
 #endif
-  while (n > 0) {
+  while(n>0) {
     --n;
-    d[n] = pres[n];
+    d[n]=pres[n];
   }
 #else
   /* for non mpi do nothing */
   return;
 #endif
 }
+
 
 void bcast(double *d, int n) {
 #ifdef WITH_MPI
-  int mpiret;
-  (void)mpiret; // Remove warning of variable set but not used
+  int mpiret; (void)mpiret; // Remove warning of variable set but not used
 
 #ifdef MPI_TIMING
   struct timeval start, end, etime;
-  gettimeofday(&start, 0);
+  gettimeofday(&start,0);
 #endif
 
-  mpiret = MPI_Bcast(d, n, MPI_DOUBLE, 0, GLB_COMM);
+  mpiret=MPI_Bcast(d, n, MPI_DOUBLE, 0,GLB_COMM);
 
 #ifdef MPI_TIMING
-  gettimeofday(&end, 0);
-  timeval_subtract(&etime, &end, &start);
-  lprintf("MPI TIMING", 0, "bcast " __FILE__ " %ld sec %ld usec\n",
-          etime.tv_sec, etime.tv_usec);
+  gettimeofday(&end,0);
+  timeval_subtract(&etime,&end,&start);
+  lprintf("MPI TIMING",0,"bcast " __FILE__ " %ld sec %ld usec\n",etime.tv_sec,etime.tv_usec);
 #endif
 
 #ifndef NDEBUG
   if (mpiret != MPI_SUCCESS) {
     char mesg[MPI_MAX_ERROR_STRING];
     int mesglen;
-    MPI_Error_string(mpiret, mesg, &mesglen);
-    lprintf("MPI", 0, "ERROR: %s\n", mesg);
-    error(1, 1, "bcast " __FILE__, "Cannot perform global_sum");
+    MPI_Error_string(mpiret,mesg,&mesglen);
+    lprintf("MPI",0,"ERROR: %s\n",mesg);
+    error(1,1,"bcast " __FILE__,"Cannot perform global_sum");
   }
 #endif
 
@@ -177,6 +176,40 @@ void bcast(double *d, int n) {
   return;
 #endif
 }
+
+#ifdef LLRHB
+void bcast_from_rank(double *d, int n, int r) {
+#ifdef WITH_MPI
+  int mpiret; (void)mpiret; // Remove warning of variable set but not used
+
+#ifdef MPI_TIMING
+  struct timeval start, end, etime;
+  gettimeofday(&start,0);
+#endif //MPI_TIMING
+
+  mpiret=MPI_Bcast(d, n, MPI_DOUBLE, r,GLB_COMM);
+
+#ifdef MPI_TIMING
+  gettimeofday(&end,0);
+  timeval_subtract(&etime,&end,&start);
+  lprintf("MPI TIMING",0,"bcast " __FILE__ " %ld sec %ld usec\n",etime.tv_sec,etime.tv_usec);
+#endif //MPI_TIMING
+#ifndef NDEBUG
+  if (mpiret != MPI_SUCCESS) {
+    char mesg[MPI_MAX_ERROR_STRING];
+    int mesglen;
+    MPI_Error_string(mpiret,mesg,&mesglen);
+    lprintf("MPI",0,"ERROR: %s\n",mesg);
+    error(1,1,"bcast " __FILE__,"Cannot perform global_sum");
+  }
+#endif //NDEBUG
+
+#else //WITH_MPI
+  /* for non mpi do nothing */
+  return;
+#endif //WITH_MPI
+}
+#endif //LLRHB
 
 void bcast_int(int *i, int n) {
 #ifdef WITH_MPI
@@ -185,25 +218,24 @@ void bcast_int(int *i, int n) {
 
 #ifdef MPI_TIMING
   struct timeval start, end, etime;
-  gettimeofday(&start, 0);
+  gettimeofday(&start,0);
 #endif
 
-  mpiret = MPI_Bcast(i, n, MPI_INT, 0, GLB_COMM);
+  mpiret=MPI_Bcast(i, n, MPI_INT, 0,GLB_COMM);
 
 #ifdef MPI_TIMING
-  gettimeofday(&end, 0);
-  timeval_subtract(&etime, &end, &start);
-  lprintf("MPI TIMING", 0, "bcast " __FILE__ " %ld sec %ld usec\n",
-          etime.tv_sec, etime.tv_usec);
+  gettimeofday(&end,0);
+  timeval_subtract(&etime,&end,&start);
+  lprintf("MPI TIMING",0,"bcast " __FILE__ " %ld sec %ld usec\n",etime.tv_sec,etime.tv_usec);
 #endif
 
 #ifndef NDEBUG
   if (mpiret != MPI_SUCCESS) {
     char mesg[MPI_MAX_ERROR_STRING];
     int mesglen;
-    MPI_Error_string(mpiret, mesg, &mesglen);
-    lprintf("MPI", 0, "ERROR: %s\n", mesg);
-    error(1, 1, "bcast " __FILE__, "Cannot perform global_sum");
+    MPI_Error_string(mpiret,mesg,&mesglen);
+    lprintf("MPI",0,"ERROR: %s\n",mesg);
+    error(1,1,"bcast " __FILE__,"Cannot perform global_sum");
   }
 #endif
 
@@ -217,13 +249,12 @@ void bcast_int(int *i, int n) {
 #ifdef WITH_MPI
 static void sync_gauge_field(suNg_field *gf) {
   int i;
-  geometry_descriptor *gd = gf->type;
+  geometry_descriptor *gd=gf->type;
   /* int j, mu, x, y; */
 
-  for (i = 0; i < gd->ncopies_gauge; ++i) {
+  for(i=0; i<gd->ncopies_gauge; ++i) {
     /* this assumes that the 4 directions are contiguous in memory !!! */
-    memcpy(((gf->ptr) + 4 * gd->copy_to[i]), ((gf->ptr) + 4 * gd->copy_from[i]),
-           4 * (gd->copy_len[i]) * sizeof(*(gf->ptr)));
+    memcpy(((gf->ptr)+4*gd->copy_to[i]),((gf->ptr)+4*gd->copy_from[i]),4*(gd->copy_len[i])*sizeof(*(gf->ptr)));
     /*
          for(j=0; j<gd->copy_len[i]; j++) {
          x=gd->copy_from[i]+j;
@@ -265,10 +296,10 @@ static void sync_spinor_field(spinor_field *p) {
   /* int j, x, y; */
   geometry_descriptor *gd = p->type;
 
-  for (i = 0; i < gd->ncopies_spinor; ++i) {
-    memcpy((p->ptr + gd->copy_to[i] - gd->master_shift),
-           (p->ptr + gd->copy_from[i] - gd->master_shift),
-           (gd->copy_len[i]) * sizeof(*(p->ptr)));
+  for(i=0; i<gd->ncopies_spinor; ++i) {
+    memcpy((p->ptr+gd->copy_to[i]-gd->master_shift),
+          (p->ptr+gd->copy_from[i]-gd->master_shift),
+          (gd->copy_len[i])*sizeof(*(p->ptr)));
     /*
        for(j=0; j<gd->copy_len[i]; j++) {
        x=gd->copy_from[i]+j;
@@ -281,11 +312,11 @@ static void sync_spinor_field(spinor_field *p) {
 
 static void sync_gauge_transf(suNg_field *gf) {
   int i;
-  geometry_descriptor *gd = gf->type;
+  geometry_descriptor *gd=gf->type;
 
-  for (i = 0; i < gd->ncopies_gauge; ++i) {
-    memcpy(((gf->ptr) + gd->copy_to[i]), ((gf->ptr) + gd->copy_from[i]),
-           (gd->copy_len[i]) * sizeof(*(gf->ptr)));
+  for(i=0; i<gd->ncopies_gauge; ++i) {
+    memcpy(((gf->ptr)+gd->copy_to[i]),((gf->ptr)+gd->copy_from[i]),
+          (gd->copy_len[i])*sizeof(*(gf->ptr)));
   }
 }
 
@@ -440,43 +471,43 @@ void start_clover_force_sendrecv(suNf_field *gf)
 
 void complete_gf_sendrecv(suNg_field *gf) {
 #ifdef WITH_MPI
-  int mpiret;
-  (void)mpiret; // Remove warning of variable set but not used
-  int nreq = 2 * gf->type->nbuffers_gauge;
+  int mpiret; (void)mpiret; // Remove warning of variable set but not used
+  int nreq=2*gf->type->nbuffers_gauge;
 
-  if (nreq > 0) {
+  if(nreq>0) {
     MPI_Status status[nreq];
 
-    mpiret = MPI_Waitall(nreq, gf->comm_req, status);
+    mpiret=MPI_Waitall(nreq, gf->comm_req, status);
 
 #ifndef NDEBUG
     if (mpiret != MPI_SUCCESS) {
       char mesg[MPI_MAX_ERROR_STRING];
       int mesglen, k;
-      MPI_Error_string(mpiret, mesg, &mesglen);
-      lprintf("MPI", 0, "ERROR: %s\n", mesg);
-      for (k = 0; k < nreq; ++k) {
+      MPI_Error_string(mpiret,mesg,&mesglen);
+      lprintf("MPI",0,"ERROR: %s\n",mesg);
+      for (k=0; k<nreq; ++k) {
         if (status[k].MPI_ERROR != MPI_SUCCESS) {
-          MPI_Error_string(status[k].MPI_ERROR, mesg, &mesglen);
-          lprintf("MPI", 0, "Req [%d] Source [%d] Tag [%] ERROR: %s\n", k,
-                  status[k].MPI_SOURCE, status[k].MPI_TAG, mesg);
+          MPI_Error_string(status[k].MPI_ERROR,mesg,&mesglen);
+          lprintf("MPI",0,"Req [%d] Source [%d] Tag [%] ERROR: %s\n",
+              k,
+              status[k].MPI_SOURCE,
+              status[k].MPI_TAG,
+              mesg);
         }
       }
-      error(1, 1, "complete_gf_sendrecv " __FILE__,
-            "Cannot complete communications");
+      error(1,1,"complete_gf_sendrecv " __FILE__,"Cannot complete communications");
     }
 #endif
   }
 
 #ifdef MPI_TIMING
-  if (gf_control > 0) {
-    gettimeofday(&gfend, 0);
-    timeval_subtract(&gfetime, &gfend, &gfstart);
-    lprintf("MPI TIMING", 0,
-            "complete_gf_sendrecv" __FILE__ " %ld sec %ld usec\n",
-            gfetime.tv_sec, gfetime.tv_usec);
-    gf_control = 0;
-  }
+    if(gf_control>0)
+      {
+	gettimeofday(&gfend,0);
+	timeval_subtract(&gfetime,&gfend,&gfstart);
+	lprintf("MPI TIMING",0,"complete_gf_sendrecv" __FILE__ " %ld sec %ld usec\n",gfetime.tv_sec,gfetime.tv_usec);
+	gf_control=0;
+      }
 #endif
 
 #endif /* WITH_MPI */
@@ -484,65 +515,60 @@ void complete_gf_sendrecv(suNg_field *gf) {
 
 void start_gf_sendrecv(suNg_field *gf) {
 #ifdef WITH_MPI
-  int i, mpiret;
-  (void)mpiret; // Remove warning of variable set but not used
-  geometry_descriptor *gd = gf->type;
+  int i, mpiret;(void)mpiret; // Remove warning of variable set but not used
+  geometry_descriptor *gd=gf->type;
 
   /* check communication status */
   /* questo credo che non sia il modo piu' efficiente!!! */
   /* bisognerebbe forse avere una variabile di stato nei campi?? */
   complete_gf_sendrecv(gf);
 
+
   /* fill send buffers */
   sync_gauge_field(gf);
 
 #ifdef MPI_TIMING
-  error(gf_control > 0, 1, "start_gf_sendrecv " __FILE__,
-        "Multiple send without receive");
-  gettimeofday(&gfstart, 0);
-  gf_control = 1;
+  error(gf_control>0,1,"start_gf_sendrecv " __FILE__,"Multiple send without receive");
+  gettimeofday(&gfstart,0);
+  gf_control=1;
 #endif
 
-  for (i = 0; i < (gd->nbuffers_gauge); ++i) {
+  for (i=0; i<(gd->nbuffers_gauge); ++i) {
     /* send ith buffer */
-    mpiret =
-        MPI_Isend((double *)((gf->ptr) + 4 * gd->sbuf_start[i]), /* buffer */
-                  (gd->sbuf_len[i]) * sizeof(suNg) / sizeof(double) *
-                      4,                 /* lenght in units of doubles */
-                  MPI_DOUBLE,            /* basic datatype */
-                  gd->sbuf_to_proc[i],   /* cid of destination */
-                  i,                     /* tag of communication */
-                  cart_comm,             /* use the cartesian communicator */
-                  &(gf->comm_req[2 * i]) /* handle to communication request */
+    mpiret=MPI_Isend((gf->ptr)+4*gd->sbuf_start[i], /* buffer */
+        (gd->sbuf_len[i])*sizeof(suNg)/sizeof(double)*4, /* lenght in units of doubles */
+        MPI_DOUBLE, /* basic datatype */
+        gd->sbuf_to_proc[i], /* cid of destination */
+        i, /* tag of communication */
+        cart_comm, /* use the cartesian communicator */
+        &(gf->comm_req[2*i]) /* handle to communication request */
         );
 #ifndef NDEBUG
     if (mpiret != MPI_SUCCESS) {
       char mesg[MPI_MAX_ERROR_STRING];
       int mesglen;
-      MPI_Error_string(mpiret, mesg, &mesglen);
-      lprintf("MPI", 0, "ERROR: %s\n", mesg);
-      error(1, 1, "start_gf_sendrecv " __FILE__, "Cannot start send buffer");
+      MPI_Error_string(mpiret,mesg,&mesglen);
+      lprintf("MPI",0,"ERROR: %s\n",mesg);
+      error(1,1,"start_gf_sendrecv " __FILE__,"Cannot start send buffer");
     }
 #endif
 
     /* receive ith buffer */
-    mpiret = MPI_Irecv(
-        (double *)((gf->ptr) + 4 * gd->rbuf_start[i]), /* buffer */
-        (gd->rbuf_len[i]) * sizeof(suNg) / sizeof(double) *
-            4,                     /* lenght in units of doubles */
-        MPI_DOUBLE,                /* basic datatype */
-        gd->rbuf_from_proc[i],     /* cid of origin */
-        i,                         /* tag of communication */
-        cart_comm,                 /* use the cartesian communicator */
-        &(gf->comm_req[2 * i + 1]) /* handle to communication request */
-    );
+    mpiret=MPI_Irecv((gf->ptr)+4*gd->rbuf_start[i], /* buffer */
+        (gd->rbuf_len[i])*sizeof(suNg)/sizeof(double)*4, /* lenght in units of doubles */
+        MPI_DOUBLE, /* basic datatype */
+        gd->rbuf_from_proc[i], /* cid of origin */
+        i, /* tag of communication */
+        cart_comm, /* use the cartesian communicator */
+        &(gf->comm_req[2*i+1]) /* handle to communication request */
+        );
 #ifndef NDEBUG
     if (mpiret != MPI_SUCCESS) {
       char mesg[MPI_MAX_ERROR_STRING];
       int mesglen;
-      MPI_Error_string(mpiret, mesg, &mesglen);
-      lprintf("MPI", 0, "ERROR: %s\n", mesg);
-      error(1, 1, "start_gf_sendrecv " __FILE__, "Cannot start receive buffer");
+      MPI_Error_string(mpiret,mesg,&mesglen);
+      lprintf("MPI",0,"ERROR: %s\n",mesg);
+      error(1,1,"start_gf_sendrecv " __FILE__,"Cannot start receive buffer");
     }
 #endif
   }
@@ -552,43 +578,40 @@ void start_gf_sendrecv(suNg_field *gf) {
 
 void complete_sf_sendrecv(spinor_field *sf) {
 #ifdef WITH_MPI
-  int mpiret;
-  (void)mpiret; // Remove warning of variable set but not used
-  int nreq = 2 * sf->type->nbuffers_spinor;
+  int mpiret; (void)mpiret; // Remove warning of variable set but not used
+  int nreq=2*sf->type->nbuffers_spinor;
 
-  if (nreq > 0) {
+  if(nreq>0) {
     MPI_Status status[nreq];
 
-    mpiret = MPI_Waitall(nreq, sf->comm_req, status);
+    mpiret=MPI_Waitall(nreq, sf->comm_req, status);
 
 #ifndef NDEBUG
     if (mpiret != MPI_SUCCESS) {
       char mesg[MPI_MAX_ERROR_STRING];
       int mesglen, k;
-      MPI_Error_string(mpiret, mesg, &mesglen);
-      lprintf("MPI", 0, "ERROR: %s\n", mesg);
-      for (k = 0; k < nreq; ++k) {
+      MPI_Error_string(mpiret,mesg,&mesglen);
+      lprintf("MPI",0,"ERROR: %s\n",mesg);
+      for (k=0; k<nreq; ++k) {
         if (status[k].MPI_ERROR != MPI_SUCCESS) {
-          MPI_Error_string(status[k].MPI_ERROR, mesg, &mesglen);
-          lprintf("MPI", 0, "Req [%d] Source [%d] Tag [%] ERROR: %s\n", k,
-                  status[k].MPI_SOURCE, status[k].MPI_TAG, mesg);
+          MPI_Error_string(status[k].MPI_ERROR,mesg,&mesglen);
+          lprintf("MPI",0,"Req [%d] Source [%d] Tag [%] ERROR: %s\n", k,
+              status[k].MPI_SOURCE,status[k].MPI_TAG,mesg);
         }
       }
-      error(1, 1, "complete_gf_sendrecv " __FILE__,
-            "Cannot complete communications");
+      error(1,1,"complete_gf_sendrecv " __FILE__,"Cannot complete communications");
     }
 #endif
   }
 
 #ifdef MPI_TIMING
-  if (sf_control > 0) {
-    gettimeofday(&sfend, 0);
-    timeval_subtract(&sfetime, &sfend, &sfstart);
-    lprintf("MPI TIMING", 0,
-            "complete_sf_sendrecv" __FILE__ " %ld sec %ld usec\n",
-            sfetime.tv_sec, sfetime.tv_usec);
-    sf_control = 0;
-  }
+    if(sf_control>0)
+      {
+	gettimeofday(&sfend,0);
+	timeval_subtract(&sfetime,&sfend,&sfstart);
+	lprintf("MPI TIMING",0,"complete_sf_sendrecv" __FILE__ " %ld sec %ld usec\n",sfetime.tv_sec,sfetime.tv_usec);
+	sf_control=0;
+      }
 #endif
 
 #endif /* WITH_MPI */
@@ -596,9 +619,9 @@ void complete_sf_sendrecv(spinor_field *sf) {
 
 void start_sf_sendrecv(spinor_field *sf) {
 #ifdef WITH_MPI
-  int i, mpiret;
-  (void)mpiret; // Remove warning of variable set but not used
-  geometry_descriptor *gd = sf->type;
+  int i, mpiret; (void)mpiret; // Remove warning of variable set but not used
+  geometry_descriptor *gd=sf->type;
+
 
   /* check communication status */
   /* questo credo che non sia il modo piu' efficiente!!! */
@@ -608,87 +631,83 @@ void start_sf_sendrecv(spinor_field *sf) {
   /* fill send buffers */
   sync_spinor_field(sf);
 #ifdef MPI_TIMING
-  error(sf_control > 0, 1, "start_sf_sendrecv " __FILE__,
-        "Multiple send without receive");
-  gettimeofday(&sfstart, 0);
-  sf_control = 1;
+  error(sf_control>0,1,"start_sf_sendrecv " __FILE__,
+      "Multiple send without receive");
+  gettimeofday(&sfstart,0);
+  sf_control=1;
 #endif
 
-  for (i = 0; i < (gd->nbuffers_spinor); ++i) {
+  for (i=0; i<(gd->nbuffers_spinor); ++i) {
     /* send ith buffer */
-    mpiret = MPI_Isend(
-        (double *)((sf->ptr) + (gd->sbuf_start[i]) -
-                   (gd->master_shift)), /* buffer */
-        (gd->sbuf_len[i]) * (sizeof(suNf_spinor) /
-                             sizeof(double)), /* lenght in units of doubles */
-        MPI_DOUBLE,                           /* basic datatype */
-        gd->sbuf_to_proc[i],                  /* cid of destination */
-        i,                                    /* tag of communication */
-        cart_comm,             /* use the cartesian communicator */
-        &(sf->comm_req[2 * i]) /* handle to communication request */
-    );
+    mpiret=MPI_Isend((sf->ptr)+(gd->sbuf_start[i])-(gd->master_shift), /* buffer */
+        (gd->sbuf_len[i])*(sizeof(suNf_spinor)/sizeof(double)), /* lenght in units of doubles */
+        MPI_DOUBLE, /* basic datatype */
+        gd->sbuf_to_proc[i], /* cid of destination */
+        i, /* tag of communication */
+        cart_comm, /* use the cartesian communicator */
+        &(sf->comm_req[2*i]) /* handle to communication request */
+        );
 #ifndef NDEBUG
     if (mpiret != MPI_SUCCESS) {
       char mesg[MPI_MAX_ERROR_STRING];
       int mesglen;
-      MPI_Error_string(mpiret, mesg, &mesglen);
-      lprintf("MPI", 0, "ERROR: %s\n", mesg);
-      error(1, 1, "start_gf_sendrecv " __FILE__, "Cannot start send buffer");
+      MPI_Error_string(mpiret,mesg,&mesglen);
+      lprintf("MPI",0,"ERROR: %s\n",mesg);
+      error(1,1,"start_gf_sendrecv " __FILE__,"Cannot start send buffer");
     }
 #endif
 
     /* receive ith buffer */
-    mpiret = MPI_Irecv(
-        (double *)((sf->ptr) + (gd->rbuf_start[i]) -
-                   (gd->master_shift)), /* buffer */
-        (gd->rbuf_len[i]) * (sizeof(suNf_spinor) /
-                             sizeof(double)), /* lenght in units of doubles */
-        MPI_DOUBLE,                           /* basic datatype */
-        gd->rbuf_from_proc[i],                /* cid of origin */
-        i,                                    /* tag of communication */
-        cart_comm,                 /* use the cartesian communicator */
-        &(sf->comm_req[2 * i + 1]) /* handle to communication request */
-    );
+    mpiret=MPI_Irecv((sf->ptr)+(gd->rbuf_start[i])-(gd->master_shift), /* buffer */
+        (gd->rbuf_len[i])*(sizeof(suNf_spinor)/sizeof(double)), /* lenght in units of doubles */
+        MPI_DOUBLE, /* basic datatype */
+        gd->rbuf_from_proc[i], /* cid of origin */
+        i, /* tag of communication */
+        cart_comm, /* use the cartesian communicator */
+        &(sf->comm_req[2*i+1]) /* handle to communication request */
+        );
 #ifndef NDEBUG
     if (mpiret != MPI_SUCCESS) {
       char mesg[MPI_MAX_ERROR_STRING];
       int mesglen;
-      MPI_Error_string(mpiret, mesg, &mesglen);
-      lprintf("MPI", 0, "ERROR: %s\n", mesg);
-      error(1, 1, "start_gf_sendrecv " __FILE__, "Cannot start receive buffer");
+      MPI_Error_string(mpiret,mesg,&mesglen);
+      lprintf("MPI",0,"ERROR: %s\n",mesg);
+      error(1,1,"start_gf_sendrecv " __FILE__,"Cannot start receive buffer");
     }
 #endif
+
   }
 
 #endif /* WITH_MPI */
 }
 
+
 void complete_gt_sendrecv(suNg_field *gf) {
 #ifdef WITH_MPI
   int mpiret;
   (void)mpiret; // Remove warning of variable set but not used
-  int nreq = 2 * gf->type->nbuffers_gauge;
+  int nreq=2*gf->type->nbuffers_gauge;
 
-  if (nreq > 0) {
+  if(nreq>0) {
     MPI_Status status[nreq];
 
-    mpiret = MPI_Waitall(nreq, gf->comm_req, status);
+    mpiret=MPI_Waitall(nreq, gf->comm_req, status);
 
 #ifndef NDEBUG
     if (mpiret != MPI_SUCCESS) {
       char mesg[MPI_MAX_ERROR_STRING];
       int mesglen, k;
-      MPI_Error_string(mpiret, mesg, &mesglen);
-      lprintf("MPI", 0, "ERROR: %s\n", mesg);
-      for (k = 0; k < nreq; ++k) {
+      MPI_Error_string(mpiret,mesg,&mesglen);
+      lprintf("MPI",0,"ERROR: %s\n",mesg);
+      for (k=0; k<nreq; ++k) {
         if (status[k].MPI_ERROR != MPI_SUCCESS) {
-          MPI_Error_string(status[k].MPI_ERROR, mesg, &mesglen);
-          lprintf("MPI", 0, "Req [%d] Source [%d] Tag [%] ERROR: %s\n", k,
-                  status[k].MPI_SOURCE, status[k].MPI_TAG, mesg);
+          MPI_Error_string(status[k].MPI_ERROR,mesg,&mesglen);
+          lprintf("MPI",0,"Req [%d] Source [%d] Tag [%] ERROR: %s\n",k,
+              status[k].MPI_SOURCE,status[k].MPI_TAG,mesg);
         }
       }
-      error(1, 1, "complete_gt_sendrecv " __FILE__,
-            "Cannot complete communications");
+      error(1,1,"complete_gt_sendrecv " __FILE__,
+          "Cannot complete communications");
     }
 #endif
   }
@@ -700,7 +719,7 @@ void start_gt_sendrecv(suNg_field *gf) {
 #ifdef WITH_MPI
   int i, mpiret;
   (void)mpiret; // Remove warning of variable set but not used
-  geometry_descriptor *gd = gf->type;
+  geometry_descriptor *gd=gf->type;
 
   /* check communication status */
   /* questo credo che non sia il modo piu' efficiente!!! */
@@ -710,48 +729,45 @@ void start_gt_sendrecv(suNg_field *gf) {
   /* fill send buffers */
   sync_gauge_transf(gf);
 
-  for (i = 0; i < (gd->nbuffers_gauge); ++i) {
+  for (i=0; i<(gd->nbuffers_gauge); ++i) {
     /* send ith buffer */
-    mpiret =
-        MPI_Isend((double *)((gf->ptr) + gd->sbuf_start[i]), /* buffer */
-                  (gd->sbuf_len[i]) * sizeof(suNg) /
-                      sizeof(double),    /* lenght in units of doubles */
-                  MPI_DOUBLE,            /* basic datatype */
-                  gd->sbuf_to_proc[i],   /* cid of destination */
-                  i,                     /* tag of communication */
-                  cart_comm,             /* use the cartesian communicator */
-                  &(gf->comm_req[2 * i]) /* handle to communication request */
+    mpiret=MPI_Isend((gf->ptr)+gd->sbuf_start[i], /* buffer */
+        (gd->sbuf_len[i])*sizeof(suNg)/sizeof(double), /* lenght in units of doubles */
+        MPI_DOUBLE, /* basic datatype */
+        gd->sbuf_to_proc[i], /* cid of destination */
+        i, /* tag of communication */
+        cart_comm, /* use the cartesian communicator */
+        &(gf->comm_req[2*i]) /* handle to communication request */
         );
 #ifndef NDEBUG
     if (mpiret != MPI_SUCCESS) {
       char mesg[MPI_MAX_ERROR_STRING];
       int mesglen;
-      MPI_Error_string(mpiret, mesg, &mesglen);
-      lprintf("MPI", 0, "ERROR: %s\n", mesg);
-      error(1, 1, "start_gt_sendrecv " __FILE__, "Cannot start send buffer");
+      MPI_Error_string(mpiret,mesg,&mesglen);
+      lprintf("MPI",0,"ERROR: %s\n",mesg);
+      error(1,1,"start_gt_sendrecv " __FILE__,"Cannot start send buffer");
     }
 #endif
 
     /* receive ith buffer */
-    mpiret = MPI_Irecv(
-        (double *)((gf->ptr) + gd->rbuf_start[i]), /* buffer */
-        (gd->rbuf_len[i]) * sizeof(suNg) /
-            sizeof(double),        /* lenght in units of doubles */
-        MPI_DOUBLE,                /* basic datatype */
-        gd->rbuf_from_proc[i],     /* cid of origin */
-        i,                         /* tag of communication */
-        cart_comm,                 /* use the cartesian communicator */
-        &(gf->comm_req[2 * i + 1]) /* handle to communication request */
-    );
+    mpiret=MPI_Irecv((gf->ptr)+gd->rbuf_start[i], /* buffer */
+        (gd->rbuf_len[i])*sizeof(suNg)/sizeof(double), /* lenght in units of doubles */
+        MPI_DOUBLE, /* basic datatype */
+        gd->rbuf_from_proc[i], /* cid of origin */
+        i, /* tag of communication */
+        cart_comm, /* use the cartesian communicator */
+        &(gf->comm_req[2*i+1]) /* handle to communication request */
+        );
 #ifndef NDEBUG
     if (mpiret != MPI_SUCCESS) {
       char mesg[MPI_MAX_ERROR_STRING];
       int mesglen;
-      MPI_Error_string(mpiret, mesg, &mesglen);
-      lprintf("MPI", 0, "ERROR: %s\n", mesg);
-      error(1, 1, "start_gt_sendrecv " __FILE__, "Cannot start receive buffer");
+      MPI_Error_string(mpiret,mesg,&mesglen);
+      lprintf("MPI",0,"ERROR: %s\n",mesg);
+      error(1,1,"start_gt_sendrecv " __FILE__,"Cannot start receive buffer");
     }
 #endif
+
   }
 
 #endif /* WITH_MPI */
@@ -870,7 +886,7 @@ void start_sc_sendrecv(suNg_scalar_field *sf) {
 #endif /* WITH_MPI */
 }
 
-//LLR
+
 #ifdef WITH_UMBRELLA
 void umbrella_swap(double* S_llr,double* S0, double* a, double* dS)
 {
