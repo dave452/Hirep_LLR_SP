@@ -71,7 +71,7 @@ void init_robbinsmonro(int nrm,int nth,double starta,int it,double dS,double S0,
   int i;
   //anneal(&(llrp.E), llrp.S0, llrp.dS);
 #ifdef LLRHBPARALLEL
-  double db = 0.0003;
+  double db = 0.1;
   //lprintf("MAIN",0,"Bringing the system to the interval (S0,E) = (%f, %f) ...\n", llrp.S0, llrp.E);
   i = anneal_parallel(llrp.starta, db, &(llrp.E),  llrp.S0, llrp.dS);
   if(i == 1){
