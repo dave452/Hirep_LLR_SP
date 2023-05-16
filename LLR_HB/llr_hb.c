@@ -40,7 +40,7 @@ typedef struct _input_llr {
   int nmc,nth,it, nfxa, sfreq_fxa, nhb, nor, it_freq;
   double starta,S0,dS, Smin, Smax;
   /* for the reading function */
-  input_record_t read[15];
+  input_record_t read[17];
 } input_llr;
 
 
@@ -61,6 +61,8 @@ typedef struct _input_llr {
     {"Number of heatbath steps per MC step ", "nhb = %d", INT_T, &((varname).nhb)}, \
     {"Number of over-relaxation steps per MC step ", "nor = %d", INT_T, &((varname).nor)}, \
     {"Suppresion factor increment frequency ", "llr:it_freq = %d", INT_T, &((varname).it_freq)},  \
+    {"Number of intial NR iterations  ", "llr:N_nr = %d", INT_T, &((varname).N_nr)},  \
+    {"Change in beta for annealing ", "llr:db = %lf", DOUBLE_T, &((varname).db)},  \
     {NULL, NULL, 0, NULL}				\
     }\
 }
@@ -111,8 +113,8 @@ int main(int argc,char *argv[]) {
   /* read input for llr update */
   read_input(llr_var.read,input_filename);
 
-  lprintf("MAIN",0,"LLR nunber of mc steps per RM: %d\n",llr_var.nmc);
-  lprintf("MAIN",0,"LLR nunber of therm steps per RM %d\n",llr_var.nth);
+  lprintf("MAIN",0,"LLR number of mc steps per RM: %d\n",llr_var.nmc);
+  lprintf("MAIN",0,"LLR number of therm steps per RM %d\n",llr_var.nth);
   lprintf("MAIN",0,"LLR Initial a %f\n",llr_var.starta);
   lprintf("MAIN",0,"LLR RM start value iteration %d and its iteration frequency %d \n",llr_var.it, llr_var.it_freq);
   lprintf("MAIN",0,"LLR S0 Central action %f\n",llr_var.S0);
@@ -123,7 +125,8 @@ int main(int argc,char *argv[]) {
   lprintf("MAIN",0,"LLR Smin minimum action for all replicas %f\n",llr_var.Smin);
   lprintf("MAIN",0,"LLR Smax maximum action for all replicas %f\n",llr_var.Smax);
   lprintf("MAIN",0,"LLR Delta S %f\n",llr_var.dS);
-
+  lprintf("MAIN",0,"LLR dB %f\n",llr_var.db);
+  lprintf("MAIN",0,"LLR number of intial NR iterations %f\n",llr_var.N_nr);
 #ifdef LLRHBPARALLEL
   lprintf("MAIN",0,"Compiled with domain decomposition \n");
 #else
@@ -144,7 +147,7 @@ int main(int argc,char *argv[]) {
   }
   lprintf("MAIN",0,"Initial plaquette: %1.8e\n",avr_plaquette());
 
-  init_robbinsmonro(llr_var.nmc,llr_var.nth,llr_var.starta,llr_var.it,llr_var.dS,llr_var.S0,llr_var.sfreq_fxa, llr_var.Smin, llr_var.Smax,llr_var.nhb,llr_var.nor, llr_var.it_freq);
+  init_robbinsmonro(llr_var.nmc,llr_var.nth,llr_var.starta,llr_var.it,llr_var.dS,llr_var.S0,llr_var.sfreq_fxa, llr_var.Smin, llr_var.Smax,llr_var.nhb,llr_var.nor, llr_var.it_freq, llr_var.db);
 
 
   for(int j=0;j<flow.rmrestart;++j) {
@@ -166,6 +169,22 @@ int main(int argc,char *argv[]) {
     timeval_subtract(&etime,&end,&start);
     lprintf("MAIN",0,"Thermalization done in [%ld sec %ld usec].\n", etime.tv_sec, etime.tv_usec);
     lprintf("MAIN",0,"Measured energy %lf, stated energy \n",avr_plaquette()*6.* GLB_VOLUME,getS0() );
+    lprintf("MAIN", 0, "Initial NR iterations, N_nr: %d %d \n", llr_var.N_nr);
+    for(i=0;i<llr_var.N_nr;++i) {
+
+      struct timeval start, end, etime; /* //for trajectory timing */
+      lprintf("MAIN",0,"NR Trajectory #%d...\n",i);
+      gettimeofday(&start,0);
+      newtonraphson();
+     //Timing and output data
+      gettimeofday(&end,0);
+      timeval_subtract(&etime,&end,&start);
+      lprintf("MAIN",0,"Newton Raphson sequence #%d: generated in [%ld sec %ld usec]\n",i,etime.tv_sec,etime.tv_usec);
+      lprintf("MAIN",0,"NR Plaq a fixed %lf \n",avr_plaquette());
+      lprintf("MAIN",0,"NR <a_rho(%d,%d,%.9f)>= %.9f\n",j,i,getS0(),get_llr_a());
+    }
+    
+    lprintf("MAIN",0,"Newton Raphson update done.\n");
     lprintf("MAIN", 0, "flow.start: %d, flow.end: %d, llr_var.it: %d \n", flow.start,flow.end, llr_var.it);
     for(i=flow.start;i<flow.end;++i) {
 
