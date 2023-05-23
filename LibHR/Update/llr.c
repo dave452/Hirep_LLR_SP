@@ -50,7 +50,7 @@ void restart_robbinsmonro(){
   llrp.a=llrp.starta;
 }
 
-void init_robbinsmonro(int nrm,int nth,double starta,int it,double dS,double S0, int sfreq_fxa, double Smin, double Smax, int nhb, int nor, int it_freq){
+void init_robbinsmonro(int nrm,int nth,double starta,int it,double dS,double S0, int sfreq_fxa, double Smin, double Smax, int nhb, int nor, int it_freq, double db){
   llrp.nrm=nrm;
   llrp.nth=nth;
   //lprintf("llr",0,"nth: %d \n", llrp.nth);
@@ -71,7 +71,7 @@ void init_robbinsmonro(int nrm,int nth,double starta,int it,double dS,double S0,
   int i;
   //anneal(&(llrp.E), llrp.S0, llrp.dS);
 #ifdef LLRHBPARALLEL
-  double db = 0.1;
+  //double db = 0.1;
   //lprintf("MAIN",0,"Bringing the system to the interval (S0,E) = (%f, %f) ...\n", llrp.S0, llrp.E);
   i = anneal_parallel(llrp.starta, db, &(llrp.E),  llrp.S0, llrp.dS);
   if(i == 1){
@@ -213,15 +213,15 @@ void newtonraphson(void){
   }
   //avr/=(double)llrp.nrm;
   //avr_sq /=(double)llrp.nrm;
-  lprintf("ROBBINSMONRO",10,"RM avr-S0: %lf delta_a: %lf \n",avr-llrp.S0,(avr-llrp.S0)*12./(llrp.dS*llrp.dS) );
-  lprintf("ROBBINSMONRO",10,"RM var(S - S0): %lf \n",avr_sq - ((avr - llrp.S0)*(avr-llrp.S0)));
+  lprintf("NEWTONRAPHSON",10,"RM avr-S0: %lf delta_a: %lf \n",avr-llrp.S0,(avr-llrp.S0)*12./(llrp.dS*llrp.dS) );
+  lprintf("NEWTONRAPHSON",10,"RM var(S - S0): %lf \n",avr_sq - ((avr - llrp.S0)*(avr-llrp.S0)));
   llrp.a-=(avr-llrp.S0)*12./(llrp.dS*llrp.dS);
 #ifdef WITH_UMBRELLA
 #ifdef LLRHB
   umbrella_swap(&(llrp.E),&llrp.S0,&llrp.a,&llrp.dS);
 #endif
 #endif
-  llrp.it++;
+//  llrp.it++;
   llrp.E = avr_plaquette()*GLB_VOLUME*6.; 
 }
 
@@ -319,6 +319,7 @@ void robbinsmonro(void){
   umbrella_swap(&S_llr,&llrp.S0,&llrp.a,&llrp.dS);
 #endif
 #endif
+  //lprintf("ROBBINSMONRO",0,"llrp.it : %d  \n",llrp.it);
   llrp.it++;
   //lprintf("Action",0,"S_llr = %f, S_avrplaq = %f \n",llrp.E, avr_plaquette()*GLB_VOLUME*6.);
   llrp.E = avr_plaquette()*GLB_VOLUME*6.; 
