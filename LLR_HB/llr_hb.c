@@ -188,7 +188,6 @@ int main(int argc,char *argv[]) {
     lprintf("MAIN",0,"Newton Raphson update done.\n");
     lprintf("MAIN", 0, "flow.start: %d, flow.end: %d, llr_var.it: %d \n", flow.start,flow.end, llr_var.it);
     for(i=flow.start;i<flow.end;++i) {
-      lprintf("MAIN",0,"llr.it #%d...\n",llr_var.it);
       struct timeval start, end, etime; /* //for trajectory timing */
       lprintf("MAIN",0,"Trajectory #%d...\n",i);
       gettimeofday(&start,0);

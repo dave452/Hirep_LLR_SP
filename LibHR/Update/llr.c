@@ -319,7 +319,7 @@ void robbinsmonro(void){
   umbrella_swap(&S_llr,&llrp.S0,&llrp.a,&llrp.dS);
 #endif
 #endif
-  lprintf("ROBBINSMONRO",0,"llrp.it : %d  \n",llrp.it);
+  //lprintf("ROBBINSMONRO",0,"llrp.it : %d  \n",llrp.it);
   llrp.it++;
   //lprintf("Action",0,"S_llr = %f, S_avrplaq = %f \n",llrp.E, avr_plaquette()*GLB_VOLUME*6.);
   llrp.E = avr_plaquette()*GLB_VOLUME*6.; 
