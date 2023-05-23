@@ -145,7 +145,7 @@ int main(int argc,char *argv[]) {
       llr_var.it = flow.start;
 
   }
-  initial_it = llr_var.it;
+  //initial_it = llr_var.it;
   lprintf("MAIN",0,"Initial plaquette: %1.8e\n",avr_plaquette());
 
   init_robbinsmonro(llr_var.nmc,llr_var.nth,llr_var.starta,llr_var.it,llr_var.dS,llr_var.S0,llr_var.sfreq_fxa, llr_var.Smin, llr_var.Smax,llr_var.nhb,llr_var.nor, llr_var.it_freq, llr_var.db);
@@ -184,11 +184,11 @@ int main(int argc,char *argv[]) {
       lprintf("MAIN",0,"NR Plaq a fixed %lf \n",avr_plaquette());
       lprintf("MAIN",0,"NR <a_rho(%d,%d,%.9f)>= %.9f\n",j,i,getS0(),get_llr_a());
     }
-    initial_it = llr_var.it;
+    //initial_it = llr_var.it;
     lprintf("MAIN",0,"Newton Raphson update done.\n");
     lprintf("MAIN", 0, "flow.start: %d, flow.end: %d, llr_var.it: %d \n", flow.start,flow.end, llr_var.it);
     for(i=flow.start;i<flow.end;++i) {
-
+      lprintf("MAIN",0,"llr.it #%d...\n",llr_var.it);
       struct timeval start, end, etime; /* //for trajectory timing */
       lprintf("MAIN",0,"Trajectory #%d...\n",i);
       gettimeofday(&start,0);
