@@ -16,7 +16,7 @@
 #include "utils.h"
 
 static int init=0;
-static int xbl,ybl,zbl,xnl,ynl,znl;
+static int xbl,ybl,zbl,num_blocks_x,num_blocks_y,num_blocks_z;
 
 static int block_size(int L)
 {
@@ -35,11 +35,11 @@ static int block_size(int L)
 static void init_block_size() 
 {
 	xbl=block_size(X);
-	xnl=X/xbl;
+	num_blocks_x=X/xbl;
 	ybl=block_size(Y);
-	ynl=Y/ybl;
+	num_blocks_y=Y/ybl;
 	zbl=block_size(Z);
-	znl=Z/zbl;
+	num_blocks_z=Z/zbl;
 }
 
 
@@ -73,7 +73,7 @@ static int index2(int x0,int x1,int x2,int x3)
    else
       ib=(y0-1)*xbl*ybl*zbl+2*(xb3+xb2*zbl+xb1*zbl*ybl)+1;
 
-   in=xn3+xn2*znl+xn1*znl*ynl;
+   in=xn3+xn2*num_blocks_z+xn1*num_blocks_z*num_blocks_y;
 
    return(ib+in*T*xbl*ybl*zbl);
 }
@@ -139,7 +139,7 @@ static int index_noT(int x0,int x1,int x2,int x3)
 
    ib=y0*xbl*ybl*zbl+(xb3+xb2*zbl+xb1*ybl*zbl);
 
-   in=xn3+xn2*znl+xn1*ynl*znl;
+   in=xn3+xn2*num_blocks_z+xn1*num_blocks_y*num_blocks_z;
 
    return(ib+in*T*xbl*ybl*zbl);
 }
