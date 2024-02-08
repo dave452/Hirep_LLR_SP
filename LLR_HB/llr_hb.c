@@ -209,7 +209,7 @@ int main(int argc,char *argv[]) {
        }
   }
   /* save final configuration */
-  save_conf(&flow, (flow.end-flow.start)*flow.rmrestart);
+  save_conf(&flow, flow.end);
   ///* Only save state if we have a file to save to */
   if(rlx_var.rlxd_state[0]!='\0') {
     lprintf("MAIN",0,"Saving rlxd state to file %s\n",rlx_var.rlxd_state);
