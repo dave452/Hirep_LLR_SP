@@ -1,0 +1,3 @@
+If you use this code in your own work or research presented in a publication, we ask
+that you please cite:
+Bennett, E., Lucini, B., Mason, D., Piai, M., Rinaldi, E., & Vadacchino, D. (2024). The density of states method for symplectic gauge theories at finite temperature. arXiv preprint arXiv:2409.19426.
